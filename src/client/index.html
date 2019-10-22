@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Temp-o-Matic Hub</title>
+    <script src="http://code.jquery.com/jquery.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Quicksand:300,regular,500,600,700" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="tempomatic.css">
+    <script type="text/javascript" src="tempomatic_client.js"></script>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0px;
+        }
+        body {
+            background-color: rgb(34, 35, 37)
+        }    
+        .appTitle {
+            width: 100%;
+            font-family: 'Quicksand';
+            font-size: 60px;
+            color: rgb(241, 241, 241);
+            text-align: center;
+            vertical-align: center;
+            justify-content: center;
+        }
+
+        .measurementHeader, .measurementValue{
+            font-family: 'Quicksand';
+            font-size: 25px;
+            color: rgb(241, 241, 241);
+        }
+
+        .measurementHeader {
+            width: 75%;
+            text-align: left;
+            vertical-align: center;
+            justify-content: center;
+            padding-right: 15px;
+        }
+
+        .measurementValue {
+            width: 25%;
+            text-align: left;
+            vertical-align: center;
+            justify-content: center;
+        }
+        .largeButton, .smallButton {    
+            color: rgb(241, 241, 241);
+            border-radius: 18px;
+            background-color: rgb(93, 173, 226);
+            font-family: Quicksand;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .largeButton {
+            font-size: 25px;
+            height: 55%;
+        }
+
+        .smallButton {
+            font-size: 20px;
+            height: 85%;
+        }
+
+        .largeButton:hover, .smallButton:hover{
+            background-color: rgb(133, 193, 233);
+        }
+
+        .largeButton:active, .smallButton:active{
+            background-color: rgb(52, 152, 219);
+        }
+
+        .head {
+            width: 100%;
+            height: 15%;
+            max-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .body {
+            width: 99%;
+            height: 85%;
+            min-height: 700px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .readingsContainer {
+            min-width: 600px;
+            max-width: 600px;
+            min-height: 700px;
+            height: 100%;
+            text-align: center;
+        }
+
+        .networkContainer {
+            min-width: 600px;
+            max-width: 600px;
+            min-height: 700px;
+            height: 100%;
+            text-align: center;
+        }
+
+        .plotContainer {
+            min-width: 600px;
+            max-width: 600px;
+            min-height: 700px;
+            height: 100%;
+            text-align: center;
+        }
+
+        .largeButtonContainer {    
+            min-width: 510px;
+            max-width: 585px;
+            height: 100px;
+            margin: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .smallButtonContainer {    
+            width: 90%;
+            height: 80px;
+            margin: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .infoContainer {    
+            min-width: 510px;
+            max-width: 600px;
+            height: 250px;
+            margin: 10px;
+            border: 3px solid rgb(93, 173, 226);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .measurementContainer {    
+            width: 80%;
+            min-width: 200px;
+            height: 50px;
+            margin: 10px;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .networkInfoContainer {    
+            min-width: 510px;
+            max-width: 600px;
+            margin: 10px;
+            border: 3px solid rgb(93, 173, 226);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+
+        .plotInfoContainer {    
+            min-width: 510px;
+            max-width: 600px;
+            margin: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+
+        .tableEntryContainer {    
+            width: 80%;
+            min-width: 200px;
+            height: 50px;
+            margin: 10px;
+            display: flex;
+            flex-direction: row;
+            border: 2px solid rgb(93, 173, 226);
+        }
+        table {
+            font-family: Quicksand;
+            color: rgb(241, 241, 241);
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td, th {
+            border: 2px solid rgb(93, 173, 226);
+            text-align: center;
+            height: 40px;
+        }
+        th {            
+            font-size: 20px;
+        }
+        td {            
+            font-size: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="head" id="header">
+        <label class="appTitle" id="appHeader">Temp-o-Matic</label>
+    </div>
+    <div class="body" id="body">
+        <div class="readingsContainer" id="readingFrame">
+            <div class="largeButtonContainer" id="convButtonFrame">
+                <div class="largeButton" id="convertButton">Convert to Fahrenheit</div>
+            </div>
+            <div class="infoContainer" id="currMeasurementFrame">
+                <div class="measurementContainer" id="currentTempFrame">
+                    <label class="measurementHeader" id="currentTempHeader">Current Temperature:</label>
+                    <label class="measurementValue" id="currentTemp">- °C</label>
+                </div>
+                <div class="measurementContainer" id="currentHumidityFrame">
+                    <label class="measurementHeader" id="currentHumidityHeader">Current Humidity:</label>
+                    <label class="measurementValue" id="currentHumidity">- %</label>
+                </div>
+                <div class="measurementContainer" id="sensorStatusFrame">
+                    <label class="measurementHeader" id="sensorStatusHeader">Sensor Status:</label>
+                    <label class="measurementValue" id="sensorStatus">-</label>
+                </div>               
+                <div class="smallButtonContainer" id="currentReadingButtonFrame">
+                    <div class="smallButton" id="currentReadingButton">Get Current Reading</div>
+                </div>
+            </div>
+            <div class="infoContainer" id="prevMeasurementFrame">                
+                <div class="measurementContainer" id="prevTempFrame">
+                        <label class="measurementHeader" id="prevTempHeader">Previous Temperature:</label>
+                        <label class="measurementValue" id="prevTemp">- °C</label>
+                    </div>
+                    <div class="measurementContainer" id="prevHumidityFrame">
+                        <label class="measurementHeader" id="prevHumidityHeader">Previous Humidity:</label>
+                        <label class="measurementValue" id="prevHumidity">- %</label>
+                    </div>  
+                    <div class="measurementContainer" id="timestampFrame">
+                        <label class="measurementHeader" id="timestampHeader">Timestamp:</label>
+                        <label class="measurementValue" id="timestamp">-</label>
+                    </div>            
+                    <div class="smallButtonContainer" id="prevReadingButtonFrame">
+                        <div class="smallButton" id="prevReadingButton">Get Previous Reading</div>
+                    </div>
+            </div>
+        </div>
+        <div class="networkContainer" id="networkFrame">            
+            <div class="largeButtonContainer" id="networkButtonFrame">
+                <div class="largeButton" id="networkButton">Check Network</div>
+            </div>
+            <div class="networkInfoContainer" id="networkActivityFrame">
+                <table>
+                    <tr>
+                        <th></th>
+                        <th>Node.JS</th>
+                        <th>Python</th>
+                    </tr>
+                    <tr>
+                        <th>Start Time</th>
+                        <td id="nodeStartTime">-</td>
+                        <td id="pyStartTime">-</td>
+                    </tr>
+                    <tr>
+                        <th>End Time</th>
+                        <td id="nodeEndTime">-</td>
+                        <td id="pyEndTime">-</td>
+                    </tr>
+                    <tr>
+                        <th>Duration</th>
+                        <td id="nodeDuration">-</td>
+                        <td id="pyDuration">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 1</th>
+                        <td id="nodeData1">-</td>
+                        <td id="pyData1">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 2</th>
+                        <td id="nodeData2">-</td>
+                        <td id="pyData2">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 3</th>
+                        <td id="nodeData3">-</td>
+                        <td id="pyData3">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 4</th>
+                        <td id="nodeData4">-</td>
+                        <td id="pyData4">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 5</th>
+                        <td id="nodeData5">-</td>
+                        <td id="pyData5">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 6</th>
+                        <td id="nodeData6">-</td>
+                        <td id="pyData6">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 7</th>
+                        <td id="nodeData7">-</td>
+                        <td id="pyData7">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 8</th>
+                        <td id="nodeData8">-</td>
+                        <td id="pyData8">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 9</th>
+                        <td id="nodeData9">-</td>
+                        <td id="pyData9">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 10</th>
+                        <td id="nodeData10">-</td>
+                        <td id="pyData10">-</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="plotContainer" id="plotFrame">            
+            <div class="largeButtonContainer" id="plotButtonFrame">
+                    <div class="largeButton" id="plotButton">Get Plots</div>
+            </div>
+            <div class="plotInfoContainer" id="plotFrame">
+                <div id="tempPlot"></div>
+                <div id="humidityPlot"></div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
