@@ -1,6 +1,13 @@
+"""aws.py: This is the python module for functions relating to amazon web services
+
+This python module is used to interface with the amazon webservices set up for the
+Tempomatic Hub. This will configure and connect the device to the Thing and publish
+messages as required. 
+
+"""
+
 import json
 import time
-import os
 
 from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 
@@ -126,6 +133,8 @@ class AWSHandler:
             # If no connection exceptions, mqtt IoT client is initialized
             self.aws_initialized = True
 
+            print("AWS Connected")
+
         else:
             print("AWS Handler not configured, please reload ")
 
@@ -145,24 +154,11 @@ class AWSHandler:
 
             # Add topic to device topic
             message_topic = "tempomatic-hub/" + topic
-            print(message_topic)
 
             # Publish topic to MQTT client with QoS of 1
             self.aws_mqtt_client.publish(message_topic, message_string, 1)
         else:
             print("AWS is not initialized. Please intialize and re-send!")
-
-    
-    def debug_class(self):
-        """ This function prints out class variables for easy of debug
-        """
-        # TODO: Delete Me!
-        print("Host: ", self.host)
-        print("Port: ", self.port)
-        print("Root Cert: ", self.root_cert)
-        print("Certificate: ", self.certificate)
-        print("Private Key: ", self.private_key)
-        print("Client ID: ", self.client_id)
 
 
 if __name__ == "__main__":

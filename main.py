@@ -14,7 +14,7 @@ import subprocess
 from PyQt5.QtWidgets import QApplication
 
 from src.temp_o_matic import MainWindow
-from src.server import run_server
+# from src.server import run_server
 
 def run_tornado_server():
     print("Running Tornado Server!")

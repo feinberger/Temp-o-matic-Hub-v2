@@ -22,6 +22,7 @@ from src.dht_22 import (
     fahrenheit_to_celsius,
 )
 from src.ui.tempomatic import Ui_MainWindow
+from src.aws import AWSHandler
 
 
 class MainWindow(QMainWindow):
@@ -77,6 +78,13 @@ class MainWindow(QMainWindow):
         self.temperature_display = "-"
         self.humidity_display = "-"
         self.last_time_read = "-"
+        
+        # System AWS Handler
+        self.aws_handler = AWSHandler()
+
+        # Initialize AWS
+        self.aws_handler.load_configuration("src/aws_configuration.json")
+        self.aws_handler.initialize_mqtt_client()
 
         # Initialize screen to start up settings
         self.initialize_screen()
@@ -289,6 +297,17 @@ class MainWindow(QMainWindow):
 
             self.set_temperature_display()
 
+            # Send to AWS SQS
+            msg_payload = {}
+            msg_payload['Command'] = 'Reading'
+            msg_payload['Temperature'] = "{:.1f}".format(result["temperature"])
+            msg_payload['Units'] = 'Celsius'
+            msg_payload['Humidity'] = self.humidity_display
+            msg_payload['Timestamp'] = self.last_time_read
+
+            self.aws_handler.send_message("temperature", msg_payload)
+
+
             # Successful read
             reading_status = True
 
@@ -308,16 +327,42 @@ class MainWindow(QMainWindow):
                     self.screen_ui.system_status.setText(
                         "<font color='red'>Temp and Humidity Err</font>"
                     )
+
+                    # Send AWS Humidity Warning
+                    msg_payload = {}
+                    msg_payload['Command'] = 'Humidity Alarm'
+                    msg_payload['Humidity'] = self.humidity_display
+                    msg_payload['Trigger'] = str(self.alarm_humidity_high)
+
+                    self.aws_handler.send_message("temperature", msg_payload)
+
                 else:
                     self.screen_ui.system_status.setText(
                         "<font color='red'>Temp Err</font>"
                     )
+
+                # Send AWS Temperature Warning
+                msg_payload = {}
+                msg_payload['Command'] = 'Temperature Alarm'
+                msg_payload['Temperature'] = self.temperature_display
+                msg_payload['Units'] = self.system_temp_setting
+                msg_payload['Trigger'] = str(self.alarm_temperature_high)
+
+                self.aws_handler.send_message("temperature", msg_payload)
             else:
                 if float(self.humidity_display) > self.alarm_humidity_high:
                     # Over humidity warning
                     self.screen_ui.system_status.setText(
                         "<font color='red'>Humidity Err</font>"
                     )
+
+                    # Send AWS Humidity Warning
+                    msg_payload = {}
+                    msg_payload['Command'] = 'Humidity Alarm'
+                    msg_payload['Humidity'] = self.humidity_display
+                    msg_payload['Trigger'] = str(self.alarm_humidity_high)
+
+                    self.aws_handler.send_message("temperature", msg_payload)
                 else:
                     self.screen_ui.system_status.setText(
                         "<font color='forestgreen'>Good</font>"
@@ -357,7 +402,6 @@ class MainWindow(QMainWindow):
 
             # Send data to plot function
             self.plot.update_values(temperatures, humidities, timestamps)
-
 
     def configure_logging(self):
         """Toggles the logging functionality of the application
