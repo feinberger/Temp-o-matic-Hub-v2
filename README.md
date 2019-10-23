@@ -43,6 +43,7 @@ $ python3 main.py
  ### Webclient GUI
  - Current readings monitor with humidity, temperature, and status via Python Webserver
  - Temperature conversion - converts current, previous, and plots to either C or F
+ - Table view of up to 20 SQS Messages displaying Temp, Humidity, and Timestamp
 
  ## Additional Features
  - Web GUI is able to monitor the SQS Count
