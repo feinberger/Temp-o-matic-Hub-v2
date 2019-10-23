@@ -115,7 +115,7 @@ $(document).ready(function () {
         for(t = 0; t < sqsData.length; t++) {
           // Convert to float
           sqsData[t].Temperature = parseFloat(sqsData[t].Temperature);
-          
+
           // Convert to fahrenheit from celsius: Temp * (9/5) + 32
           sqsData[t].Temperature  = (sqsData[t].Temperature  * 1.8) + 32.0;
 
@@ -219,22 +219,57 @@ $(document).ready(function () {
   });
 
   // Handle All SQS Message Request
-  $("#allDataButton").click(function(evt) {
-    // Get total number of messages
-    sqsInfoRequest().then(value => {
-      var totalMessages = value.Attributes.ApproximateNumberOfMessages;
-      document.getElementById("sqsMessageCount").innerHTML = totalMessages;
-    });
+  $("#allDataButton").click(async function(evt) {
+    // Request SQS Info
+    const msg = await sqsInfoRequest();
 
-    // Calculate Remaining Number of messages
-    var remainingMessages = parseInt(totalMessages);
+    // Extract number of messages on sqs
+    var numOfMessages = msg.Attributes.ApproximateNumberOfMessages;
 
-    // Determine if sqs empty
-    if (remainingMessages > 0) {
-      alert("Get messages!");
-    } else {
-      alert("SQS is Empty!");
+    // Update sqs count
+    document.getElementById("sqsMessageCount").innerHTML = numOfMessages;
+
+    // Calculate remaining messages
+    var remainingMessages = parseInt(numOfMessages);
+
+    while (remainingMessages > 0) {
+      // Request SQS Info
+      const newData = await singleSQSRequest();
+
+      if (newData.Messages.length > 0) {
+        // Add value to dataset
+        const sqsMsg = newData.Messages[0].Body;
+        const sqsObj = JSON.parse(sqsMsg);
+        addSQSData(sqsObj);
+
+        // Delete msg from SQS
+        var deleteParams = {
+          QueueUrl: queueURL,
+          ReceiptHandle: newData.Messages[0].ReceiptHandle
+        };
+        
+        sqs.deleteMessage(deleteParams, function(err, data) {
+          if (err) {
+            alert("Issue deleting SQS Message!");
+          }
+        });
+
+        // Reduce remaining message
+        remainingMessages = remainingMessages - 1;
+
+        // Update sqs count
+        document.getElementById("sqsMessageCount").innerHTML = remainingMessages.toString();
+
+      } else {
+        remainingMessages = 0;
+
+        // Update sqs count
+        document.getElementById("sqsMessageCount").innerHTML = remainingMessages.toString();
+      }
     };
+    
+    // Update sqs count
+    document.getElementById("sqsMessageCount").innerHTML = remainingMessages.toString();
   });
 
   // Handle SQS Message Count Button
@@ -337,7 +372,7 @@ $(document).ready(function () {
       QueueUrl: queueURL
     };
 
-    const msg = sqs.getQueueAttributes(params).promise();
+    const msg = await sqs.getQueueAttributes(params).promise();
 
     return msg;
   };
