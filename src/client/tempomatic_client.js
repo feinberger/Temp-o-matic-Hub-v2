@@ -109,19 +109,21 @@ $(document).ready(function () {
         document.getElementById("currentTemp").innerHTML = "- °F";
       }
 
-      // Update Temperature Plots
-      if (temperature_list != null)
+      // Update Temperature SQS Data
+      if (sqsData.length > 0)
       {
-        for(t = 0; t < temperature_list.length; t++) {
+        for(t = 0; t < sqsData.length; t++) {
+          // Convert to float
+          sqsData[t].Temperature = parseFloat(sqsData[t].Temperature);
+          
           // Convert to fahrenheit from celsius: Temp * (9/5) + 32
-          temperature_list[t] = (temperature_list[t] * 1.8) + 32.0;
+          sqsData[t].Temperature  = (sqsData[t].Temperature  * 1.8) + 32.0;
 
           // Limit to 1 decimal point
-          temperature_list[t] = temperature_list[t].toFixed(1);
+          sqsData[t].Temperature = sqsData[t].Temperature.toFixed(1);
         }
-        
-        // Update plot
-        createPlot(time_list, temperature_list, humidity_list);
+
+        updateSQSTable()
       }      
     }
     else if (tempUnits == "F") {
@@ -146,19 +148,21 @@ $(document).ready(function () {
         document.getElementById("currentTemp").innerHTML = "- °C";
       }
 
-      // Update Temperature Plots
-      if (temperature_list != null)
+      // Update Temperature SQS Data
+      if (sqsData.length > 0)
       {
-        for(t = 0; t < temperature_list.length; t++) {
+        for(t = 0; t < sqsData.length; t++) {
+          // Convert to float
+          sqsData[t].Temperature = parseFloat(sqsData[t].Temperature);
+
           // Convert to celsius from fahrenheit: (Temp - 32) * (5/9)
-          temperature_list[t] = (temperature_list[t] - 32.0) / 1.8;
+          sqsData[t].Temperature = (sqsData[t].Temperature - 32.0) / 1.8;
 
           // Limit to 1 decimal point
-          temperature_list[t] = temperature_list[t].toFixed(1);
+          sqsData[t].Temperature = sqsData[t].Temperature.toFixed(1);
         }
 
-        // Update plot
-        createPlot(time_list, temperature_list, humidity_list);
+        updateSQSTable();
       }
     }
   });
@@ -202,11 +206,53 @@ $(document).ready(function () {
             alert("Issue deleting SQS Message!");
           }
         });
+    
+        // Update SQS Count
+        updateSQSMessageCount();
       } else {
         alert("SQS is Empty!");
+    
+        // Update SQS Count
+        updateSQSMessageCount();
       }
     });
   });
+
+  // Handle All SQS Message Request
+  $("#allDataButton").click(function(evt) {
+    // Get total number of messages
+    sqsInfoRequest().then(value => {
+      var totalMessages = value.Attributes.ApproximateNumberOfMessages;
+      document.getElementById("sqsMessageCount").innerHTML = totalMessages;
+    });
+
+    // Calculate Remaining Number of messages
+    var remainingMessages = parseInt(totalMessages);
+
+    // Determine if sqs empty
+    if (remainingMessages > 0) {
+      alert("Get messages!");
+    } else {
+      alert("SQS is Empty!");
+    };
+  });
+
+  // Handle SQS Message Count Button
+  $("#sqsInfoButton").click(function(evt) {
+    // Get total number of messages
+    sqsInfoRequest().then(value => {
+      var totalMessages = value.Attributes.ApproximateNumberOfMessages;
+      document.getElementById("sqsMessageCount").innerHTML = totalMessages;
+    });
+  });
+
+  // Update SQS Message Count
+  function updateSQSMessageCount() {
+    sqsInfoRequest().then(value => {
+      var numOfMessages = value.Attributes.ApproximateNumberOfMessages;
+      document.getElementById("sqsMessageCount").innerHTML = numOfMessages;
+    });
+  }
 
   // Add received data to sqs dataset
   function addSQSData(value) {
@@ -222,18 +268,27 @@ $(document).ready(function () {
       sqsData.push(newData);
     }
 
+    updateSQSTable();
+  };
+
+  function updateSQSTable() {
     var i;
     // Update Datasets
     for (i=1; i < (sqsData.length + 1); i++) {
       // Update Temperature
-      document.getElementById("temp"+i.toString()).innerHTML = sqsData[i-1].Temperature;
+      if (tempUnits == "F") {
+        document.getElementById("temp"+i.toString()).innerHTML = sqsData[i-1].Temperature + " °F";
+      }
+      else if (tempUnits == "C") {
+        document.getElementById("temp"+i.toString()).innerHTML = sqsData[i-1].Temperature + " °C";
+      }
 
       // Update Humidity
-      document.getElementById("humidity"+i.toString()).innerHTML = sqsData[i-1].Humidity;
+      document.getElementById("humidity"+i.toString()).innerHTML = sqsData[i-1].Humidity + "%";
 
       // Update Timestamp
       document.getElementById("timestamp"+i.toString()).innerHTML = sqsData[i-1].Timestamp;
-    }
+    };
   };
 
   // Single SQS Request
@@ -254,7 +309,7 @@ $(document).ready(function () {
     return msg;
   };
 
-  // All SWS Request
+  // Max Number SQS Request
   async function maxSQSRequest() {
     // Set up parameters with Max Msg of 10
     const params = {
@@ -271,4 +326,35 @@ $(document).ready(function () {
 
     return msg; 
   };
+
+  // SQS Attribute Info Request
+  async function sqsInfoRequest() {
+    // Set up parameters 
+    const params = {
+      AttributeNames: [
+         "All"
+      ],
+      QueueUrl: queueURL
+    };
+
+    const msg = sqs.getQueueAttributes(params).promise();
+
+    return msg;
+  };
+
+  // Get All SQS Requests
+  function getAllSQSRequests() {
+    var finishedFlag = 0;
+    maxSQSRequest.then(value => {
+      if (value.Messages.length > 0) {
+        finishedFlag = 0;
+      }
+      else {
+        finishedFlag = 1;
+      }
+    });
+
+    return finishedFlag;
+  }
+
 });
