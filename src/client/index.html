@@ -5,8 +5,8 @@
     <title>Temp-o-Matic Hub</title>
     <script src="http://code.jquery.com/jquery.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Quicksand:300,regular,500,600,700" rel="stylesheet" type="text/css">
-    <link rel="stylesheet" href="tempomatic.css">
     <script type="text/javascript" src="tempomatic_client.js"></script>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.554.0.min.js"></script>
     <style>
         html, body {
             width: 100%;
@@ -51,6 +51,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            margin: 5px;
             width: 100%;
             cursor: pointer;
         }
@@ -217,27 +218,11 @@
                     <div class="smallButton" id="currentReadingButton">Get Current Reading</div>
                 </div>
             </div>
-            <div class="infoContainer" id="singleMeasurementFrame">                
-                <div class="measurementContainer" id="singleTempFrame">
-                    <label class="measurementHeader" id="singleTempHeader">Last Temperature:</label>
-                    <label class="measurementValue" id="singleTemp">- °C</label>
-                </div>
-                <div class="measurementContainer" id="singleHumidityFrame">
-                    <label class="measurementHeader" id="singleHumidityHeader">Last Humidity:</label>
-                    <label class="measurementValue" id="singleHumidity">- %</label>
-                </div>  
-                <div class="measurementContainer" id="timestampFrame">
-                    <label class="measurementHeader" id="timestampHeader">Timestamp:</label>
-                    <label class="measurementValue" id="timestamp">-</label>
-                </div>            
-                <div class="smallButtonContainer" id="singleReadingButtonFrame">
-                    <div class="smallButton" id="singleReadingButton">Get Single SQS Reading</div>
-                </div>
-            </div>
         </div>
         <div class="dataContainer" id="dataFrame">            
             <div class="largeButtonContainer" id="dataButtonFrame">
-                <div class="largeButton" id="dataButton">Get All SQS Readings</div>
+                <div class="largeButton" id="singleDataButton">Get Single SQS</div>
+                <div class="largeButton" id="allDataButton">Get All SQS</div>
             </div>
             <div class="dataInfoContainer" id="dataInfoFrame">
                 <table>

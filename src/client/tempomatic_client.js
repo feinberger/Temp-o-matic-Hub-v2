@@ -8,27 +8,26 @@ $(document).ready(function () {
   var port_py = "8888";
   var uri_py = "/ws";
 
-  // node.js websocket host info
-  var port_js = "8989";
-  var uri_js = "/";
-
   // python websocket variable
   var ws;
-
-  // node.js websocket variable
-  var ws_js;
 
   // System parameters
   var tempUnits = "C";
   var currentTemp = null;
   var currentHumidity = null;
   var sensorStatus = "";
-  var prevTemp = null;
-  var prevHumidity = null;
-  var prevTimestamp = "";
   var time_list = null;
   var temperature_list = null;
   var humidity_list = null;
+  var sqsData = [];
+
+  // Initialize the Amazon Cognito credentials provider
+  AWS.config.region = 'us-east-1'; 
+  AWS.config.credentials = new AWS.CognitoIdentityCredentials({IdentityPoolId: 'us-east-1:c42135ba-597a-4297-bc59-4476a72e8a69'});
+
+  // Create SQS Service
+  var sqs = new AWS.SQS({apiVersion: '2012-11-05'});
+  var queueURL = "https://sqs.us-east-1.amazonaws.com/723839298742/Tempomatic_Queue";
 
   // create websocket instance for python
   ws = new WebSocket("ws://" + host + ":" + port_py + uri_py);
@@ -110,21 +109,6 @@ $(document).ready(function () {
         document.getElementById("currentTemp").innerHTML = "- °F";
       }
 
-      // Update Previous Temperature
-      if (prevTemp != null) {
-        // Convert to fahrenheit from celsius: Temp * (9/5) + 32
-        prevTemp = (prevTemp * 1.8) + 32.0;
-
-        // Limit to 1 decimal point
-        prevTemp = prevTemp.toFixed(1);
-
-        // Update Temperature Text
-        updatePreviousTemperature();
-      }
-      else {
-        document.getElementById("prevTemp").innerHTML = "- °F";
-      }
-
       // Update Temperature Plots
       if (temperature_list != null)
       {
@@ -162,21 +146,6 @@ $(document).ready(function () {
         document.getElementById("currentTemp").innerHTML = "- °C";
       }
 
-      // Update Previous Temperature
-      if (prevTemp != null) {
-        // Convert to celsius from fahrenheit: (Temp - 32) * (5/9)
-        prevTemp = (prevTemp - 32.0) / 1.8;
-
-        // Limit to 1 decimal point
-        prevTemp = prevTemp.toFixed(1);
-
-        // Update Temperature Text
-        updatePreviousTemperature();
-      }
-      else {
-        document.getElementById("prevTemp").innerHTML = "- °C";
-      }
-
       // Update Temperature Plots
       if (temperature_list != null)
       {
@@ -212,5 +181,94 @@ $(document).ready(function () {
   // Update Sensor Status
   var updateSensorStatus = function() {
     document.getElementById("sensorStatus").innerHTML = sensorStatus;
+  };
+
+  // Handle single sqs request
+  $("#singleDataButton").click(function(evt) {
+    singleSQSRequest().then(value => {
+      if (value.Messages.length > 0) {
+        // Add value to dataset
+        const sqsMsg = value.Messages[0].Body;
+        const sqsObj = JSON.parse(sqsMsg);
+        addSQSData(sqsObj);
+
+        // Delete msg from SQS
+        var deleteParams = {
+          QueueUrl: queueURL,
+          ReceiptHandle: value.Messages[0].ReceiptHandle
+        };
+        sqs.deleteMessage(deleteParams, function(err, data) {
+          if (err) {
+            alert("Issue deleting SQS Message!");
+          }
+        });
+      } else {
+        alert("SQS is Empty!");
+      }
+    });
+  });
+
+  // Add received data to sqs dataset
+  function addSQSData(value) {
+    const newData = value;
+    
+    // Add to latest dataset if length less then 20
+    if (sqsData.length < 20) {
+      sqsData.push(newData);
+    }
+    // Greater then 20, remove oldest item
+    else {
+      sqsData.shift();
+      sqsData.push(newData);
+    }
+
+    var i;
+    // Update Datasets
+    for (i=1; i < (sqsData.length + 1); i++) {
+      // Update Temperature
+      document.getElementById("temp"+i.toString()).innerHTML = sqsData[i-1].Temperature;
+
+      // Update Humidity
+      document.getElementById("humidity"+i.toString()).innerHTML = sqsData[i-1].Humidity;
+
+      // Update Timestamp
+      document.getElementById("timestamp"+i.toString()).innerHTML = sqsData[i-1].Timestamp;
+    }
+  };
+
+  // Single SQS Request
+  async function singleSQSRequest() {
+    // Set up parameters with Max Msg of 1
+    const params = {
+      MessageAttributeNames: [
+         "All"
+      ],
+      QueueUrl: queueURL, 
+      MaxNumberOfMessages: 1,
+      VisibilityTimeout: 0,
+      WaitTimeSeconds: 0
+    };
+
+    const msg = sqs.receiveMessage(params).promise();
+
+    return msg;
+  };
+
+  // All SWS Request
+  async function maxSQSRequest() {
+    // Set up parameters with Max Msg of 10
+    const params = {
+      MessageAttributeNames: [
+         "All"
+      ],
+      QueueUrl: queueURL, 
+      MaxNumberOfMessages: 10,
+      VisibilityTimeout: 0,
+      WaitTimeSeconds: 0
+    };
+
+    const msg = sqs.receiveMessage(params).promise();
+
+    return msg; 
   };
 });

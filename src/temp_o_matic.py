@@ -1,11 +1,11 @@
-"""temp_o_matic.py: This is the python module for functions relating to the UI for temp-o-matic.
+'''temp_o_matic.py: This is the python module for functions relating to the UI for temp-o-matic.
 
 This python module is used to interface with the python converted code from the .ui file designed in
 QT Designer. This contains the objects and functions required to interface with the GUI that
 displays the temperature and humidity and the corresponding plots and settings to go with the
 application.
 
-"""
+'''
 import sys
 
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QApplication
@@ -26,14 +26,14 @@ from src.aws import AWSHandler
 
 
 class MainWindow(QMainWindow):
-    """MainWindow: a class that is the main object for main screen ui"""
+    '''MainWindow: a class that is the main object for main screen ui'''
 
-    def __init__(self, sensor_type="DHT_22"):
-        """Returns a the main window of the temp-o-matic application.
+    def __init__(self, sensor_type='DHT_22'):
+        '''Returns a the main window of the temp-o-matic application.
 
         Args:
             sensor (str): Temperature/Humidity Sensor Type
-        """
+        '''
         super(MainWindow, self).__init__()
 
         # Initialize and Setup UI from converted .ui
@@ -41,9 +41,9 @@ class MainWindow(QMainWindow):
         self.screen_ui.setupUi(self)
 
         # System Parameters
-        self.system_temp_setting = "Celsius"  # System units for temperature
-        self.temp_unit = "°C"  # Temperature Unit String
-        self.humidity_unit = "%"  # Humidity in percentage
+        self.system_temp_setting = 'Celsius'  # System units for temperature
+        self.temp_unit = '°C'  # Temperature Unit String
+        self.humidity_unit = '%'  # Humidity in percentage
         self.logging_status = False
         self.sensor_type = sensor_type  # Type of humidity/temp sensor
         self.maximum_temperature = None  # Maximum temperature of sensor
@@ -68,22 +68,22 @@ class MainWindow(QMainWindow):
         self.temperature_sensor = DHT22Sensor(4)
 
         # System database
-        self.sys_db = TemperatureDatabase("TEST_DATABASE", "TEMP_MONITOR", "PASSWORD")
+        self.sys_db = TemperatureDatabase('TEST_DATABASE', 'TEMP_MONITOR', 'PASSWORD')
         self.sys_db.create_table()
 
         # System plot
         self.plot = self.screen_ui.plot
 
         # System display
-        self.temperature_display = "-"
-        self.humidity_display = "-"
-        self.last_time_read = "-"
+        self.temperature_display = '-'
+        self.humidity_display = '-'
+        self.last_time_read = '-'
         
         # System AWS Handler
         self.aws_handler = AWSHandler()
 
         # Initialize AWS
-        self.aws_handler.load_configuration("src/aws_configuration.json")
+        self.aws_handler.load_configuration('src/aws_configuration.json')
         self.aws_handler.initialize_mqtt_client()
 
         # Initialize screen to start up settings
@@ -115,15 +115,15 @@ class MainWindow(QMainWindow):
         self.screen_ui.humid_plot_switch.toggled.connect(self.update_humidity_curve)
 
     def initialize_screen(self):
-        """Initializes the screen widgets to start-up values and settings
-        """
+        '''Initializes the screen widgets to start-up values and settings
+        '''
         # Initialize initial readings and timestamp
-        self.screen_ui.temp_reading.setText("-" + self.temp_unit)
-        self.screen_ui.humidity_reading.setText("-%")
-        self.screen_ui.timestamp.setText("-")
+        self.screen_ui.temp_reading.setText('-' + self.temp_unit)
+        self.screen_ui.humidity_reading.setText('-%')
+        self.screen_ui.timestamp.setText('-')
 
         # Initialize system max/min settings
-        if self.sensor_type == "DHT_22":
+        if self.sensor_type == 'DHT_22':
             self.maximum_temperature = DHT22_MAXIMUM_TEMPERATURE
             self.minimum_temperature = DHT22_MINIMUM_TEMPERATURE
             self.maximum_humidity = DHT22_MAXIMUM_HUMIDITY
@@ -133,8 +133,8 @@ class MainWindow(QMainWindow):
         self.set_alarm_settings()
 
         # Set system statuses
-        self.screen_ui.system_status.setText("<font color='forestgreen'>Good</font>")
-        self.screen_ui.sensor_status.setText("<font color='goldenrod'>Loading</font>")
+        self.screen_ui.system_status.setText('<font color="forestgreen">Good</font>')
+        self.screen_ui.sensor_status.setText('<font color="goldenrod">Loading</font>')
 
         # Initialize both plot curves to on
         self.screen_ui.temp_plot_switch.setChecked(True)
@@ -144,22 +144,22 @@ class MainWindow(QMainWindow):
         # TODO: Fix this so the GUI doesn't lock while waiting for sensor
         while not self.temperature_sensor.sensor_initialized:
             self.temperature_sensor.initialize_sensor()
-        self.screen_ui.sensor_status.setText("<font color='forestgreen'>Ready</font>")
+        self.screen_ui.sensor_status.setText('<font color="forestgreen">Ready</font>')
 
     def update_temperature_alarm(self):
-        """ Updates the temperature alarm setting
-        """
+        ''' Updates the temperature alarm setting
+        '''
         if not self.converting_flag:
             self.alarm_temperature_high = self.screen_ui.temp_alarm.value()
-            temperature_text = "{0:.1f}{1}".format(
+            temperature_text = '{0:.1f}{1}'.format(
                 self.alarm_temperature_high, self.temp_unit
             )
             self.screen_ui.temp_alarm_setting.setText(temperature_text)
             self.check_alarms()
 
     def update_humidity_alarm(self):
-        """ Updates the temperature alarm setting
-        """
+        ''' Updates the temperature alarm setting
+        '''
         self.alarm_humidity_high = self.screen_ui.humidity_alarm.value()
         self.screen_ui.humidity_alarm_setting.setText(
             str(self.alarm_humidity_high) + self.humidity_unit
@@ -167,32 +167,32 @@ class MainWindow(QMainWindow):
         self.check_alarms()
 
     def update_temperature_units(self):
-        """ Determines/toggles the system temperature units
-        """
-        if self.system_temp_setting == "Celsius":
-            self.system_temp_setting = "Fahrenheit"
+        ''' Determines/toggles the system temperature units
+        '''
+        if self.system_temp_setting == 'Celsius':
+            self.system_temp_setting = 'Fahrenheit'
             self.convert_to_fahrenheit()
-        elif self.system_temp_setting == "Fahrenheit":
-            self.system_temp_setting = "Celsius"
+        elif self.system_temp_setting == 'Fahrenheit':
+            self.system_temp_setting = 'Celsius'
             self.convert_to_celsius()
         else:
-            print("Bad Temperature Unit")
+            print('Bad Temperature Unit')
 
     def convert_to_fahrenheit(self):
-        """ Converts the system ui and settings to degrees fahrenheit
-        """
+        ''' Converts the system ui and settings to degrees fahrenheit
+        '''
         # Set converting flag
         self.converting_flag = True
 
         # Update system units
-        self.temp_unit = "°F"
+        self.temp_unit = '°F'
 
         # Update temperature readings
-        if self.temperature_display == "-":
+        if self.temperature_display == '-':
             # Only update units if system isn't running
-            self.screen_ui.temp_reading.setText("-" + self.temp_unit)
+            self.screen_ui.temp_reading.setText('-' + self.temp_unit)
         else:
-            self.temperature_display = "{:.1f}".format(
+            self.temperature_display = '{:.1f}'.format(
                 celsius_to_fahrenheit(float(self.temperature_display))
             )
             self.set_temperature_display()
@@ -211,20 +211,20 @@ class MainWindow(QMainWindow):
         self.converting_flag = False
 
     def convert_to_celsius(self):
-        """ Converts the system ui and settings to degrees celsius
-        """
+        ''' Converts the system ui and settings to degrees celsius
+        '''
         # Set converting flag
         self.converting_flag = True
 
         # Update system units
-        self.temp_unit = "°C"
+        self.temp_unit = '°C'
 
         # Update temperature readings
-        if self.temperature_display == "-":
+        if self.temperature_display == '-':
             # Only update units if system isn't running
-            self.screen_ui.temp_reading.setText("-" + self.temp_unit)
+            self.screen_ui.temp_reading.setText('-' + self.temp_unit)
         else:
-            self.temperature_display = "{:.1f}".format(
+            self.temperature_display = '{:.1f}'.format(
                 fahrenheit_to_celsius(float(self.temperature_display))
             )
             self.set_temperature_display()
@@ -243,15 +243,15 @@ class MainWindow(QMainWindow):
         self.converting_flag = False
 
     def set_alarm_settings(self):
-        """Configures the alarm slider settings and current value
-        """
+        '''Configures the alarm slider settings and current value
+        '''
         self.screen_ui.temp_alarm.setMaximum(self.maximum_temperature)
         self.screen_ui.temp_alarm.setMinimum(self.minimum_temperature)
         self.screen_ui.humidity_alarm.setMaximum(self.maximum_humidity)
         self.screen_ui.humidity_alarm.setMinimum(self.minimum_humidity)
 
         # Set initial alarm to reasonable standard settings
-        temperature_text = "{0:.1f}{1}".format(
+        temperature_text = '{0:.1f}{1}'.format(
             self.alarm_temperature_high, self.temp_unit
         )
         self.screen_ui.temp_alarm_setting.setText(temperature_text)
@@ -262,11 +262,11 @@ class MainWindow(QMainWindow):
         self.screen_ui.humidity_alarm.setValue(self.alarm_humidity_high)
 
     def get_reading(self):
-        """ Get current temperature and humidity reading and update sensor status
+        ''' Get current temperature and humidity reading and update sensor status
 
         Returns: 
             bool: If reading was successfully captured
-        """
+        '''
         # Reading Status
         reading_status = False
 
@@ -274,23 +274,23 @@ class MainWindow(QMainWindow):
         result = self.temperature_sensor.get_current_reading()
 
         # Only update values if sensor is not busy
-        if result["status"] == "Busy":
-            self.screen_ui.sensor_status.setText("<font color='goldenrod'>Busy</font>")
-        elif result["status"] == "Unavailable":
-            self.screen_ui.sensor_status.setText("<font color='red'>Read Error</font>")
-        elif result["status"] == "Offline":
-            self.screen_ui.sensor_status.setText("<font color='red'>Offline</font>")
+        if result['status'] == 'Busy':
+            self.screen_ui.sensor_status.setText('<font color="goldenrod">Busy</font>')
+        elif result['status'] == 'Unavailable':
+            self.screen_ui.sensor_status.setText('<font color="red">Read Error</font>')
+        elif result['status'] == 'Offline':
+            self.screen_ui.sensor_status.setText('<font color="red">Offline</font>')
         else:
-            self.screen_ui.sensor_status.setText("<font color='green'>Ready</font>")
-            if self.system_temp_setting == "Celsius":
-                self.temperature_display = "{:.1f}".format(result["temperature"])
+            self.screen_ui.sensor_status.setText('<font color="green">Ready</font>')
+            if self.system_temp_setting == 'Celsius':
+                self.temperature_display = '{:.1f}'.format(result['temperature'])
             else:
                 # Convert reading to fahrenehit because celsius by default
-                self.temperature_display = "{:.1f}".format(
-                    celsius_to_fahrenheit(result["temperature"])
+                self.temperature_display = '{:.1f}'.format(
+                    celsius_to_fahrenheit(result['temperature'])
                 )
-            self.humidity_display = "{:.1f}".format(result["humidity"])
-            self.last_time_read = "{}".format(result["timestamp"])
+            self.humidity_display = '{:.1f}'.format(result['humidity'])
+            self.last_time_read = '{}'.format(result['timestamp'])
 
             # Check for alarm warnings
             self.check_alarms()
@@ -300,12 +300,12 @@ class MainWindow(QMainWindow):
             # Send to AWS SQS
             msg_payload = {}
             msg_payload['Command'] = 'Reading'
-            msg_payload['Temperature'] = "{:.1f}".format(result["temperature"])
+            msg_payload['Temperature'] = '{:.1f}'.format(result['temperature'])
             msg_payload['Units'] = 'Celsius'
             msg_payload['Humidity'] = self.humidity_display
             msg_payload['Timestamp'] = self.last_time_read
 
-            self.aws_handler.send_message("temperature", msg_payload)
+            self.aws_handler.send_message('temperature', msg_payload)
 
             # Successful read
             reading_status = True
@@ -313,10 +313,10 @@ class MainWindow(QMainWindow):
         return reading_status
 
     def check_alarms(self):
-        """ Checks alarm statuses and updates system status
-        """
+        ''' Checks alarm statuses and updates system status
+        '''
         # Check for alarm warnings, ignore if no readings
-        if self.temperature_display == "-" or self.humidity_display == "-":
+        if self.temperature_display == '-' or self.humidity_display == '-':
             pass
         else:
             if float(self.temperature_display) > self.alarm_temperature_high:
@@ -324,7 +324,7 @@ class MainWindow(QMainWindow):
                 if float(self.humidity_display) > self.alarm_humidity_high:
                     # Over humidity warning
                     self.screen_ui.system_status.setText(
-                        "<font color='red'>Temp and Humidity Err</font>"
+                        '<font color="red">Temp and Humidity Err</font>'
                     )
 
                     # Send AWS Humidity Warning
@@ -333,11 +333,11 @@ class MainWindow(QMainWindow):
                     msg_payload['Humidity'] = self.humidity_display
                     msg_payload['Trigger'] = str(self.alarm_humidity_high)
 
-                    self.aws_handler.send_message("temperature", msg_payload)
+                    self.aws_handler.send_message('temperature', msg_payload)
 
                 else:
                     self.screen_ui.system_status.setText(
-                        "<font color='red'>Temp Err</font>"
+                        '<font color="red">Temp Err</font>'
                     )
 
                 # Send AWS Temperature Warning
@@ -347,12 +347,12 @@ class MainWindow(QMainWindow):
                 msg_payload['Units'] = self.system_temp_setting
                 msg_payload['Trigger'] = str(self.alarm_temperature_high)
 
-                self.aws_handler.send_message("temperature", msg_payload)
+                self.aws_handler.send_message('temperature', msg_payload)
             else:
                 if float(self.humidity_display) > self.alarm_humidity_high:
                     # Over humidity warning
                     self.screen_ui.system_status.setText(
-                        "<font color='red'>Humidity Err</font>"
+                        '<font color="red">Humidity Err</font>'
                     )
 
                     # Send AWS Humidity Warning
@@ -361,15 +361,15 @@ class MainWindow(QMainWindow):
                     msg_payload['Humidity'] = self.humidity_display
                     msg_payload['Trigger'] = str(self.alarm_humidity_high)
 
-                    self.aws_handler.send_message("temperature", msg_payload)
+                    self.aws_handler.send_message('temperature', msg_payload)
                 else:
                     self.screen_ui.system_status.setText(
-                        "<font color='forestgreen'>Good</font>"
+                        '<font color="forestgreen">Good</font>'
                     )
 
     def set_temperature_display(self):
-        """Function to update the temperature monitor display
-        """
+        '''Function to update the temperature monitor display
+        '''
         self.screen_ui.temp_reading.setText(self.temperature_display + self.temp_unit)
         self.screen_ui.humidity_reading.setText(
             self.humidity_display + self.humidity_unit
@@ -377,8 +377,8 @@ class MainWindow(QMainWindow):
         self.screen_ui.timestamp.setText(self.last_time_read)
 
     def update_plot(self):
-        """ Initiaze plotting function for the temperature and humidity
-        """
+        ''' Initiaze plotting function for the temperature and humidity
+        '''
         # Get last 10 measurements
         values = self.sys_db.get_last_measurements(10)
         
@@ -403,8 +403,8 @@ class MainWindow(QMainWindow):
             self.plot.update_values(temperatures, humidities, timestamps)
 
     def configure_logging(self):
-        """Toggles the logging functionality of the application
-        """
+        '''Toggles the logging functionality of the application
+        '''
         if self.logging_status:
             # Stop and delete logging timer
             if self.logging_timer:
@@ -427,8 +427,8 @@ class MainWindow(QMainWindow):
             self.start_logging_timer()
 
     def start_logging_timer(self):
-        """ Function to start logging timer
-        """
+        ''' Function to start logging timer
+        '''
         # if timer exists stop and delete timer
         if self.logging_timer:
             self.logging_timer.stop()
@@ -445,20 +445,20 @@ class MainWindow(QMainWindow):
             self.logging_timer.start(self.logging_interval_ms)
 
     def log_measurement(self):
-        """ logs measurement from DHT22
-        """
+        ''' logs measurement from DHT22
+        '''
         # Disable now button
         self.screen_ui.current_reading_button.setDisabled(True)
 
-        print("Logging Measurement!")
+        print('Logging Measurement!')
 
         # Set sensor status to busy
         if self.get_reading():
             # Store measurement always as celsius for consistency
-            if self.system_temp_setting == "Celsius":
+            if self.system_temp_setting == 'Celsius':
                 temp_reading = self.temperature_display
             else:
-                temp_reading = "{:.1f}".format(fahrenheit_to_celsius(float(self.temperature_display)))
+                temp_reading = '{:.1f}'.format(fahrenheit_to_celsius(float(self.temperature_display)))
             self.sys_db.store_measurement(
                 temp_reading, self.humidity_display, self.last_time_read
             )
@@ -504,21 +504,21 @@ class MainWindow(QMainWindow):
                 self.plot.humidity_curve.hide()
 
     def closeEvent(self, event):
-        """ Adds additional close events to application
-        """
+        ''' Adds additional close events to application
+        '''
         # Close database before closing application
         self.sys_db.close_connection()
 
-        print("Closing Application")
+        print('Closing Application')
 
 
 def run_gui():
-    print("Starting GUI!")
+    print('Starting GUI!')
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
     sys.exit(app.exec_())
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     run_gui()

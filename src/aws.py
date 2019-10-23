@@ -1,10 +1,10 @@
-"""aws.py: This is the python module for functions relating to amazon web services
+'''aws.py: This is the python module for functions relating to amazon web services
 
 This python module is used to interface with the amazon webservices set up for the
 Tempomatic Hub. This will configure and connect the device to the Thing and publish
 messages as required. 
 
-"""
+'''
 
 import json
 import time
@@ -13,10 +13,10 @@ from AWSIoTPythonSDK.MQTTLib import AWSIoTMQTTClient
 
 
 class AWSHandler:
-    """ A class to handle AWS Interaction """
+    ''' A class to handle AWS Interaction '''
 
     def __init__(self):
-        """ AWS Handler initialization """
+        ''' AWS Handler initialization '''
 
         # AWS Parameters
         self.host = None  # AWS Endpoint
@@ -36,60 +36,60 @@ class AWSHandler:
         )  # Indication if aws handler mqtt client initialized
 
     def load_configuration(self, configuration_file):
-        """ Function that parses json configuration file and updates class
+        ''' Function that parses json configuration file and updates class
         settings/configurations
-        """
+        '''
         # Variable to keep track of errors
         configure_error = False
 
         # Open and serialize JSON config file to python dictionary
-        with open(configuration_file, "r") as json_config_file:
+        with open(configuration_file, 'r') as json_config_file:
             configuration = json.load(json_config_file)
 
         # Update Host from config file
-        if "Host" in configuration:
-            self.host = configuration["Host"]
+        if 'Host' in configuration:
+            self.host = configuration['Host']
         else:
-            print("Configuration file is missing Host! Update configuration file!")
+            print('Configuration file is missing Host! Update configuration file!')
             configure_error = True
 
         # Update Port from config file
-        if "Port" in configuration:
-            self.port = int(configuration["Port"])
+        if 'Port' in configuration:
+            self.port = int(configuration['Port'])
         else:
-            print("Configuration file is missing Port! Update configuration file!")
+            print('Configuration file is missing Port! Update configuration file!')
             configure_error = True
 
         # Update Root CA from config file
-        if "Root CA" in configuration:
-            self.root_cert = configuration["Root CA"]
+        if 'Root CA' in configuration:
+            self.root_cert = configuration['Root CA']
         else:
-            print("Configuration file is missing Root CA! Update configuration file!")
+            print('Configuration file is missing Root CA! Update configuration file!')
             configure_error = True
 
         # Update Device Certificate from config file
-        if "Device Certificate" in configuration:
-            self.certificate = configuration["Device Certificate"]
+        if 'Device Certificate' in configuration:
+            self.certificate = configuration['Device Certificate']
         else:
             print(
-                "Configuration file is missing Device Certificate! Update configuration file!"
+                'Configuration file is missing Device Certificate! Update configuration file!'
             )
             configure_error = True
 
         # Update Device Certificate from config file
-        if "Private Key" in configuration:
-            self.private_key = configuration["Private Key"]
+        if 'Private Key' in configuration:
+            self.private_key = configuration['Private Key']
         else:
             print(
-                "Configuration file is missing Private Key! Update configuration file!"
+                'Configuration file is missing Private Key! Update configuration file!'
             )
             configure_error = True
 
         # Update Client ID from config file
-        if "Client ID" in configuration:
-            self.client_id = configuration["Client ID"]
+        if 'Client ID' in configuration:
+            self.client_id = configuration['Client ID']
         else:
-            print("Configuration file is missing Client ID! Update configuration file!")
+            print('Configuration file is missing Client ID! Update configuration file!')
             configure_error = True
 
         # AWS Handler only configured if no errors loading configuration
@@ -99,10 +99,10 @@ class AWSHandler:
             self.configured_flag = True
 
     def initialize_mqtt_client(self):
-        """ This function initializes AWS MQTT Client
+        ''' This function initializes AWS MQTT Client
 
             Returns: bool - initialized occured
-        """
+        '''
 
         if self.configured_flag:
             # Create mqtt client from AWS IoT SDK
@@ -133,13 +133,13 @@ class AWSHandler:
             # If no connection exceptions, mqtt IoT client is initialized
             self.aws_initialized = True
 
-            print("AWS Connected")
+            print('AWS Connected')
 
         else:
-            print("AWS Handler not configured, please reload ")
+            print('AWS Handler not configured, please reload ')
 
     def send_message(self, topic, payload):
-        """ Sends a payload json message """
+        ''' Sends a payload json message '''
 
         # Only send message if mqtt client is initialized
         if self.aws_initialized:
@@ -147,24 +147,24 @@ class AWSHandler:
             message = {}
 
             # Add payload to message
-            message["Payload"] = payload
+            message['Payload'] = payload
 
             # Convert serialized data into string
             message_string = json.dumps(message)
 
             # Add topic to device topic
-            message_topic = "tempomatic-hub/" + topic
+            message_topic = 'tempomatic-hub/' + topic
 
             # Publish topic to MQTT client with QoS of 1
             self.aws_mqtt_client.publish(message_topic, message_string, 1)
         else:
-            print("AWS is not initialized. Please intialize and re-send!")
+            print('AWS is not initialized. Please intialize and re-send!')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     aws_handler = AWSHandler()
 
-    aws_handler.load_configuration("src/aws_configuration.json")
+    aws_handler.load_configuration('src/aws_configuration.json')
 
     aws_handler.initialize_mqtt_client()
 
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     msg_payload['Timestamp'] = '10/20/2019 4:16:23'
     msg_payload['Trigger'] = '80'
 
-    aws_handler.send_message("temperature", msg_payload)
+    aws_handler.send_message('temperature', msg_payload)
 
     msg_payload = {}
     msg_payload['Command'] = 'Reading'
@@ -184,4 +184,4 @@ if __name__ == "__main__":
     msg_payload['Humidity'] = '30'
     msg_payload['Timestamp'] = '10/20/2019 4:16:23'
 
-    aws_handler.send_message("temperature", msg_payload)
+    aws_handler.send_message('temperature', msg_payload)
