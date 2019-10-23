@@ -214,7 +214,10 @@ $(document).ready(function () {
     
         // Update SQS Count
         updateSQSMessageCount();
-      }
+      }      
+    
+      // Update SQS Count
+      updateSQSMessageCount();
     });
   });
 
@@ -267,7 +270,7 @@ $(document).ready(function () {
         document.getElementById("sqsMessageCount").innerHTML = remainingMessages.toString();
       }
     };
-    
+
     // Update sqs count
     document.getElementById("sqsMessageCount").innerHTML = remainingMessages.toString();
   });
@@ -282,11 +285,10 @@ $(document).ready(function () {
   });
 
   // Update SQS Message Count
-  function updateSQSMessageCount() {
-    sqsInfoRequest().then(value => {
-      var numOfMessages = value.Attributes.ApproximateNumberOfMessages;
-      document.getElementById("sqsMessageCount").innerHTML = numOfMessages;
-    });
+  async function updateSQSMessageCount() {
+    const msg = await sqsInfoRequest();
+    var numOfMessages = msg.Attributes.ApproximateNumberOfMessages;
+    document.getElementById("sqsMessageCount").innerHTML = numOfMessages;
   }
 
   // Add received data to sqs dataset
