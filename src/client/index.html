@@ -4,7 +4,6 @@
 <head>
     <title>Temp-o-Matic Hub</title>
     <script src="http://code.jquery.com/jquery.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link href="https://fonts.googleapis.com/css?family=Quicksand:300,regular,500,600,700" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="tempomatic.css">
     <script type="text/javascript" src="tempomatic_client.js"></script>
@@ -26,13 +25,11 @@
             vertical-align: center;
             justify-content: center;
         }
-
         .measurementHeader, .measurementValue{
             font-family: 'Quicksand';
             font-size: 25px;
             color: rgb(241, 241, 241);
         }
-
         .measurementHeader {
             width: 75%;
             text-align: left;
@@ -40,7 +37,6 @@
             justify-content: center;
             padding-right: 15px;
         }
-
         .measurementValue {
             width: 25%;
             text-align: left;
@@ -58,25 +54,20 @@
             width: 100%;
             cursor: pointer;
         }
-
         .largeButton {
             font-size: 25px;
             height: 55%;
         }
-
         .smallButton {
             font-size: 20px;
             height: 85%;
         }
-
         .largeButton:hover, .smallButton:hover{
             background-color: rgb(133, 193, 233);
         }
-
         .largeButton:active, .smallButton:active{
             background-color: rgb(52, 152, 219);
         }
-
         .head {
             width: 100%;
             height: 15%;
@@ -85,7 +76,6 @@
             align-items: center;
             justify-content: center;
         }
-
         .body {
             width: 99%;
             height: 85%;
@@ -94,7 +84,6 @@
             align-items: center;
             justify-content: center;
         }
-
         .readingsContainer {
             min-width: 600px;
             max-width: 600px;
@@ -102,23 +91,20 @@
             height: 100%;
             text-align: center;
         }
-
-        .networkContainer {
+        .dataContainer {
             min-width: 600px;
             max-width: 600px;
             min-height: 700px;
             height: 100%;
             text-align: center;
         }
-
-        .plotContainer {
+        .sqsDataContainer {
             min-width: 600px;
             max-width: 600px;
             min-height: 700px;
             height: 100%;
             text-align: center;
         }
-
         .largeButtonContainer {    
             min-width: 510px;
             max-width: 585px;
@@ -128,7 +114,6 @@
             align-items: center;
             justify-content: center;
         }
-
         .smallButtonContainer {    
             width: 90%;
             height: 80px;
@@ -137,7 +122,6 @@
             align-items: center;
             justify-content: center;
         }
-
         .infoContainer {    
             min-width: 510px;
             max-width: 600px;
@@ -149,7 +133,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .measurementContainer {    
             width: 80%;
             min-width: 200px;
@@ -158,8 +141,7 @@
             display: flex;
             flex-direction: row;
         }
-
-        .networkInfoContainer {    
+        .dataInfoContainer {    
             min-width: 510px;
             max-width: 600px;
             margin: 10px;
@@ -169,17 +151,17 @@
             justify-content: flex-start;
             align-items: flex-start;
         }
-
-        .plotInfoContainer {    
+        .sqsInfoContainer {    
             min-width: 510px;
             max-width: 600px;
+            height: 80px;
             margin: 10px;
+            border: 3px solid rgb(93, 173, 226);
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
-            align-items: flex-start;
+            justify-content: center;
+            align-items: center;
         }
-
         .tableEntryContainer {    
             width: 80%;
             min-width: 200px;
@@ -235,110 +217,168 @@
                     <div class="smallButton" id="currentReadingButton">Get Current Reading</div>
                 </div>
             </div>
-            <div class="infoContainer" id="prevMeasurementFrame">                
-                <div class="measurementContainer" id="prevTempFrame">
-                        <label class="measurementHeader" id="prevTempHeader">Previous Temperature:</label>
-                        <label class="measurementValue" id="prevTemp">- °C</label>
-                    </div>
-                    <div class="measurementContainer" id="prevHumidityFrame">
-                        <label class="measurementHeader" id="prevHumidityHeader">Previous Humidity:</label>
-                        <label class="measurementValue" id="prevHumidity">- %</label>
-                    </div>  
-                    <div class="measurementContainer" id="timestampFrame">
-                        <label class="measurementHeader" id="timestampHeader">Timestamp:</label>
-                        <label class="measurementValue" id="timestamp">-</label>
-                    </div>            
-                    <div class="smallButtonContainer" id="prevReadingButtonFrame">
-                        <div class="smallButton" id="prevReadingButton">Get Previous Reading</div>
-                    </div>
+            <div class="infoContainer" id="singleMeasurementFrame">                
+                <div class="measurementContainer" id="singleTempFrame">
+                    <label class="measurementHeader" id="singleTempHeader">Last Temperature:</label>
+                    <label class="measurementValue" id="singleTemp">- °C</label>
+                </div>
+                <div class="measurementContainer" id="singleHumidityFrame">
+                    <label class="measurementHeader" id="singleHumidityHeader">Last Humidity:</label>
+                    <label class="measurementValue" id="singleHumidity">- %</label>
+                </div>  
+                <div class="measurementContainer" id="timestampFrame">
+                    <label class="measurementHeader" id="timestampHeader">Timestamp:</label>
+                    <label class="measurementValue" id="timestamp">-</label>
+                </div>            
+                <div class="smallButtonContainer" id="singleReadingButtonFrame">
+                    <div class="smallButton" id="singleReadingButton">Get Single SQS Reading</div>
+                </div>
             </div>
         </div>
-        <div class="networkContainer" id="networkFrame">            
-            <div class="largeButtonContainer" id="networkButtonFrame">
-                <div class="largeButton" id="networkButton">Check Network</div>
+        <div class="dataContainer" id="dataFrame">            
+            <div class="largeButtonContainer" id="dataButtonFrame">
+                <div class="largeButton" id="dataButton">Get All SQS Readings</div>
             </div>
-            <div class="networkInfoContainer" id="networkActivityFrame">
+            <div class="dataInfoContainer" id="dataInfoFrame">
                 <table>
                     <tr>
                         <th></th>
-                        <th>Node.JS</th>
-                        <th>Python</th>
-                    </tr>
-                    <tr>
-                        <th>Start Time</th>
-                        <td id="nodeStartTime">-</td>
-                        <td id="pyStartTime">-</td>
-                    </tr>
-                    <tr>
-                        <th>End Time</th>
-                        <td id="nodeEndTime">-</td>
-                        <td id="pyEndTime">-</td>
-                    </tr>
-                    <tr>
-                        <th>Duration</th>
-                        <td id="nodeDuration">-</td>
-                        <td id="pyDuration">-</td>
+                        <th>Temperature</th>
+                        <th>Humidity</th>
+                        <th>Timestamp</th>
                     </tr>
                     <tr>
                         <th>Dataset 1</th>
-                        <td id="nodeData1">-</td>
-                        <td id="pyData1">-</td>
+                        <td id="temp1">-</td>
+                        <td id="humidity1">-</td>
+                        <td id="timestamp1">-</td>
                     </tr>
                     <tr>
                         <th>Dataset 2</th>
-                        <td id="nodeData2">-</td>
-                        <td id="pyData2">-</td>
+                        <td id="temp2">-</td>
+                        <td id="humidity2">-</td>
+                        <td id="timestamp2">-</td>
                     </tr>
                     <tr>
                         <th>Dataset 3</th>
-                        <td id="nodeData3">-</td>
-                        <td id="pyData3">-</td>
+                        <td id="temp3">-</td>
+                        <td id="humidity3">-</td>
+                        <td id="timestamp3">-</td>
                     </tr>
                     <tr>
                         <th>Dataset 4</th>
-                        <td id="nodeData4">-</td>
-                        <td id="pyData4">-</td>
+                        <td id="temp4">-</td>
+                        <td id="humidity4">-</td>
+                        <td id="timestamp4">-</td>
                     </tr>
                     <tr>
                         <th>Dataset 5</th>
-                        <td id="nodeData5">-</td>
-                        <td id="pyData5">-</td>
+                        <td id="temp5">-</td>
+                        <td id="humidity5">-</td>
+                        <td id="timestamp5">-</td>
                     </tr>
                     <tr>
                         <th>Dataset 6</th>
-                        <td id="nodeData6">-</td>
-                        <td id="pyData6">-</td>
+                        <td id="temp6">-</td>
+                        <td id="humidity6">-</td>
+                        <td id="timestamp6">-</td>
                     </tr>
                     <tr>
                         <th>Dataset 7</th>
-                        <td id="nodeData7">-</td>
-                        <td id="pyData7">-</td>
+                        <td id="temp7">-</td>
+                        <td id="humidity7">-</td>
+                        <td id="timestamp7">-</td>
                     </tr>
                     <tr>
                         <th>Dataset 8</th>
-                        <td id="nodeData8">-</td>
-                        <td id="pyData8">-</td>
+                        <td id="temp8">-</td>
+                        <td id="humidity8">-</td>
+                        <td id="timestamp8">-</td>
                     </tr>
                     <tr>
                         <th>Dataset 9</th>
-                        <td id="nodeData9">-</td>
-                        <td id="pyData9">-</td>
+                        <td id="temp9">-</td>
+                        <td id="humidity9">-</td>
+                        <td id="timestamp9">-</td>
                     </tr>
                     <tr>
                         <th>Dataset 10</th>
-                        <td id="nodeData10">-</td>
-                        <td id="pyData10">-</td>
+                        <td id="temp10">-</td>
+                        <td id="humidity10">-</td>
+                        <td id="timestamp10">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 11</th>
+                        <td id="temp11">-</td>
+                        <td id="humidity11">-</td>
+                        <td id="timestamp11">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 12</th>
+                        <td id="temp12">-</td>
+                        <td id="humidity12">-</td>
+                        <td id="timestamp12">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 13</th>
+                        <td id="temp13">-</td>
+                        <td id="humidity13">-</td>
+                        <td id="timestamp13">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 14</th>
+                        <td id="temp14">-</td>
+                        <td id="humidity14">-</td>
+                        <td id="timestamp14">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 15</th>
+                        <td id="temp15">-</td>
+                        <td id="humidity15">-</td>
+                        <td id="timestamp15">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 16</th>
+                        <td id="temp16">-</td>
+                        <td id="humidity16">-</td>
+                        <td id="timestamp16">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 17</th>
+                        <td id="temp17">-</td>
+                        <td id="humidity17">-</td>
+                        <td id="timestamp17">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 18</th>
+                        <td id="temp18">-</td>
+                        <td id="humidity18">-</td>
+                        <td id="timestamp18">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 19</th>
+                        <td id="temp19">-</td>
+                        <td id="humidity19">-</td>
+                        <td id="timestamp19">-</td>
+                    </tr>
+                    <tr>
+                        <th>Dataset 20</th>
+                        <td id="temp20">-</td>
+                        <td id="humidity20">-</td>
+                        <td id="timestamp20">-</td>
                     </tr>
                 </table>
             </div>
         </div>
-        <div class="plotContainer" id="plotFrame">            
-            <div class="largeButtonContainer" id="plotButtonFrame">
-                    <div class="largeButton" id="plotButton">Get Plots</div>
+        <div class="sqsDataContainer" id="sqsDataFrame">            
+            <div class="largeButtonContainer" id="sqsInfoButtonFrame">
+                    <div class="largeButton" id="sqsInfoButton">Get SQS Count</div>
             </div>
-            <div class="plotInfoContainer" id="plotFrame">
-                <div id="tempPlot"></div>
-                <div id="humidityPlot"></div>
+            <div class="sqsInfoContainer" id="sqsInfoFrame">                
+                <div class="measurementContainer" id="sqsMessageCountFrame">
+                    <label class="measurementHeader" id="sqsMessageCountHeader">SQS Count:</label>
+                    <label class="measurementValue" id="sqsMessageCount">-</label>
+                </div>
             </div>
         </div>
     </div>

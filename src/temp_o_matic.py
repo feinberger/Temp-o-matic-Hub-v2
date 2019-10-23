@@ -307,7 +307,6 @@ class MainWindow(QMainWindow):
 
             self.aws_handler.send_message("temperature", msg_payload)
 
-
             # Successful read
             reading_status = True
 
